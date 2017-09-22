@@ -11,6 +11,7 @@ import signal
 import copy
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+
 class CameraOneClient(WebSocketClient):
     def opened(self):
         pass

@@ -22,17 +22,21 @@ Its contains the Graphical interface of the interfaces provided in pyDrivingMatt
 
 Its contains the code which are obsolete.
 
+## Documentation
+
+Check [wiki page](https://gitlab.com/UntitledGroup/driving-matter/wikis/home) of this project.
+
 ## Members
 
-Syed Owais Ali Chishti - p146011@nu.edu.pk
+Syed Owais Ali Chishti - [p146011@nu.edu.pk](p146011@nu.edu.pk)
 
-Hafiz M. Bilal Zaib - p146099@nu.edu.pk
+Hafiz M. Bilal Zaib - [p146099@nu.edu.pk](p146099@nu.edu.pk)
 
-Sana Riaz - p1460114@nu.edu.pk
+Sana Riaz - [p146114@nu.edu.pk](p146114@nu.edu.pk)
 
 ## Supervisor
 
-Dr. Mohammad Nauman - mohammad.nauman@nu.edu.pk
+Dr. Mohammad Nauman - [mohammad.nauman@nu.edu.pk](mohammad.nauman@nu.edu.pk)
 
 ## Useful Links
 

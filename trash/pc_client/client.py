@@ -1,5 +1,6 @@
 import websocket
 
+
 class CameraOneReceiver(websocket.WebSocket):
     #def on_open(self):
     #    self.write('hello, world')
