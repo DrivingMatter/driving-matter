@@ -58,9 +58,10 @@ class CameraOne(object):
 
             i += 1
             elapse = (time.time() - start)
-            if elapse > 10:
+            if elapse > 300000:
                 break;
 
+        cv2.destroyWindow("Frame")
         print (i)
         print (elapse)
         print (str(i/elapse) + " fps")
@@ -151,8 +152,9 @@ class Action(object):
 
 if __name__ == "__main__":
 
-    #camera = CameraOne("ws://192.168.1.11:8000/CameraOne", 5)
-    action = Action("ws://192.168.1.11:8000/Action", 5)
+    #camera = CameraOne("ws://192.168.43.183:8000/CameraOne", 5)
+    action = Action("ws://192.168.43.183:8000/Action", 5)
+    print ("After Action")
     #camera = CameraOne("ws://192.168.1.11:8000/Sensor", 5)
     
     #camera = Client("ws://192.168.137.2:8000/CameraOne", 5)
