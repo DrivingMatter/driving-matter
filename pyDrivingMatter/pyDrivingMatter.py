@@ -14,6 +14,7 @@ from KBhit import KBHit
 from BrowseCar import BrowseCar
 
 class pyDrivingMatter():
+    bc = None
     def __init__(self):
         self.bc = BrowseCar()
         self.bc.start_browser()
@@ -22,11 +23,11 @@ class pyDrivingMatter():
         return self.bc.get_available_car()
 
     # Destructor
-    def __enter__(self)
+    def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback)
-        bc.stop_browser()
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.bc.stop_browser()
 
 class Car():
     def __init__(self, url_action, url_camera_c = None, url_camera_l = None, url_camera_r = None, url_sensor = None):
@@ -66,29 +67,29 @@ class Car():
         if self.url_sensor:
             self.ws_sensor = yield websocket_connect(self.url_sensor, on_message_callback=self._sensor_callback)        
 
-    def __sendStep(self, method, step)
+    def __sendStep(self, method, step):
         current_time_epoch = int(time())
         self.ws_action.write_message("{} {} {}".format(method, step, current_time_epoch))
 
-    def forward(self, step = 1)
+    def forward(self, step = 1):
         self.__sendStep("forward", step)
 
-    def forwardRight(self, step = 1)
+    def forwardRight(self, step = 1):
         self.__sendStep("forwardRight", step)
     
-    def forwardLeft(self, step = 1)
+    def forwardLeft(self, step = 1):
         self.__sendStep("forwardLeft", step)
     
-    def backward(self, step = 1)
+    def backward(self, step = 1):
         self.__sendStep("backward", step)
     
-    def backwardRight(self, step = 1)
+    def backwardRight(self, step = 1):
         self.__sendStep("backwardRight", step)
 
-    def backwardLeft(self, step = 1)
+    def backwardLeft(self, step = 1):
         self.__sendStep("backwardLeft", step)
 
-    def stop(self, step = 1)
+    def stop(self, step = 1):
         self.__sendStep("stop", step)
 
     def _car_message_callback(self, message):
@@ -133,5 +134,5 @@ class Car():
     def set_camera_r_callback(self, callback):
         self.camera_r_callback = callback
 
-    def set_sensor_callback(self, callback)
+    def set_sensor_callback(self, callback):
         self.sensor_callback = callbac

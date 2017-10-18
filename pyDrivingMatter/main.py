@@ -1,8 +1,8 @@
 from pyDrivingMatter import pyDrivingMatter
-from KBHit import KBHit
+from KBhit import KBHit
 
-with pyDrivingMatter() as pydm
-    cars = pydm.get_available_car()
+with pyDrivingMatter() as pydm:
+    cars = pydm.available_cars()
 
     if len(cars) == 0:
         raise EnvironmentError("No car available")
@@ -27,7 +27,7 @@ def handle_camera_c(data):
 car.set_camera_c_callback(handle_camera_c)
 
 try:
-	kb = KBHit()
+    kb = KBHit()
     while True:
         if kb.kbhit():
             c = kb.carkey()
