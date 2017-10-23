@@ -1,17 +1,33 @@
-from pyDrivingMatter import pyDrivingMatter
-from KBHit import KBHit
+from pyDrivingMatter import pyDrivingMatter, Car
+from KBhit import KBHit
+import sys
+from time import sleep
+import logging
+import cv2
+import io
+from PIL import Image
+import numpy as np
 
-with pyDrivingMatter() as pydm
-    cars = pydm.get_available_car()
+logging.basicConfig(level=logging.INFO)
 
-    if len(cars) == 0:
-        raise EnvironmentError("No car available")
+cars = None
+with pyDrivingMatter() as pydm:
+    while True:
+        cars = pydm.available_cars()
+        if len(cars) == 0:
+            logging.debug("Waiting for cars on network")
+        else: 
+            break
+        sleep(1)
 
 car_data = cars[0]
 
-car_link = "{}:{}".format(car_data['address'], car_data['port'])
-action_link = "{}/action"
-camera_c_link = "{}/camera_c"
+car_link = "ws://{}:{}".format(car_data['address'], car_data['port'])
+action_link = "{}/action".format(car_link)
+camera_c_link = "{}/camera_c".format(car_link)
+
+logging.debug("Action Link: " + action_link)
+logging.debug("Camera C Link: " + camera_c_link)
 
 car = Car(action_link, camera_c_link)
 
@@ -19,7 +35,8 @@ def handle_camera_c(data):
     stream = io.BytesIO()
     stream.write(data)
     stream.seek(0)
-    img = np.asarray(Image.open(stream))
+    img = Image.open(stream)
+    img = np.asarray(img)
     cv2.imshow("camera_c", img)
     stream.seek(0)
     key = cv2.waitKey(1) & 0xFF
@@ -27,22 +44,21 @@ def handle_camera_c(data):
 car.set_camera_c_callback(handle_camera_c)
 
 try:
-	kb = KBHit()
+    kb = KBHit()
     while True:
         if kb.kbhit():
             c = kb.carkey()
+
             if c == 0: # Up
                 car.forward()            
             elif c == 1: # Right
-                car.right() 
+                car.forwardRight() 
             elif c == 2: # Down
                 car.backward()              
             elif c == 3: # Left
-                car.left()              
+                car.forwardLeft()              
             elif c == 4: # Space
-                car.left()              
-
-
+                car.stop()              
 finally:
     kb.set_normal_term()    
     cv2.destroyWindow("camera_c")

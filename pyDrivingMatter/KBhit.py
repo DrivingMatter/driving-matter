@@ -77,30 +77,8 @@ class KBHit:
 
         if os.name == 'nt':
             return msvcrt.getch().decode('utf-8')
-
         else:
             return sys.stdin.read(1)
-
-
-    def getarrow(self):
-        ''' Returns an arrow-key code after kbhit() has been called. Codes are
-        0 : up
-        1 : right
-        2 : down
-        3 : left
-        Should not be called in the same program as getch().
-        '''
-
-        if os.name == 'nt':
-            msvcrt.getch() # skip 0xE0
-            c = msvcrt.getch()
-            vals = [72, 77, 80, 75]
-
-        else:
-            c = sys.stdin.read(3)[2]
-            vals = [65, 67, 66, 68]
-
-        return vals.index(ord(c.decode('utf-8')))
 
     def carkey(self):
         ''' Returns an arrow-key code after kbhit() has been called. Codes are
@@ -112,17 +90,20 @@ class KBHit:
         '''
 
         if os.name == 'nt':
-            msvcrt.getch() # skip 0xE0
-            c = msvcrt.getch()
+            o = msvcrt.getch() # skip 0xE0, handle space
+            if ord(o) == 32:
+                c = o
+            else:    
+                c = msvcrt.getch()
             vals = [72, 77, 80, 75, 32]
-
         else:
             c = sys.stdin.read(3)[2]
             vals = [65, 67, 66, 68, 32]
 
-        return vals.index(ord(c.decode('utf-8')))
-
-
+        c = ord(c)
+        if c in vals:
+            return vals.index(c)
+        return -1
 
     def kbhit(self):
         ''' Returns True if keyboard character was hit, False otherwise.
