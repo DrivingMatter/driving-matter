@@ -13,6 +13,7 @@ from KBhit import KBHit
 from BrowseCar import BrowseCar
 
 class pyDrivingMatter():
+    bc = None
     def __init__(self):
         self.bc = BrowseCar()
         self.bc.start_browser()
