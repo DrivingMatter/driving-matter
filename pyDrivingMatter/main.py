@@ -1,6 +1,10 @@
 from pyDrivingMatter import pyDrivingMatter, Car
+from Dataset import Dataset
 from KBhit import KBHit
 import sys
+# import os
+import time
+# import datetime
 from time import sleep
 import logging
 import cv2
@@ -37,7 +41,9 @@ def handle_camera_c(data):
     stream.seek(0)
     img = Image.open(stream)
     img = np.asarray(img)
-    cv2.imshow("camera_c", img)
+    dataset=Dataset('dataset/'+time.strftime("%d-%m-%Y"),'dataset.csv')
+    dataset.save_data(img)
+    # cv2.imshow("camera_c", img)
     stream.seek(0)
     key = cv2.waitKey(1) & 0xFF
 
