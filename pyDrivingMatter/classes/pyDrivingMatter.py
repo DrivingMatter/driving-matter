@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import websocket
 import io
 import cv2
@@ -29,13 +27,14 @@ class pyDrivingMatter():
         self.bc.stop_browser()
 
 class Car():
-    def __init__(self, url_action, url_camera_c = None, url_camera_l = None, url_camera_r = None, url_sensor = None):
+    def __init__(self, url_action, url_camera_c = None, url_camera_l = None, url_camera_r = None, url_sensor = None, url_state = None):
         logging.debug("Car class initiated")
         self.url_action = url_action
         self.url_camera_c = url_camera_c
         self.url_camera_l = url_camera_l
         self.url_camera_r = url_camera_r
         self.url_sensor = url_sensor
+        self.url_state = url_state
 
         self.car_message_callback = None
         self.camera_c_callback = None
@@ -48,14 +47,35 @@ class Car():
         self.ws_camera_l = None
         self.ws_camera_r = None
         self.ws_sensor = None
+        self.ws_state = None
+
+        self.frame_c_count = 0
+        self.frame_c_start_time = None
 
         self.connect_ws()
 
     def test(self):
         print ("test called")
 
+    def _car_state_callback(self, ws, message):
+        state = message
+        print (state)
+
+    def _state_c_on_open(self, ws):
+        ws.send("send_state")
+        print ("Websocket state opened, send_state sent")
+
     def connect_ws(self):
         logging.debug(("="*5) + "Connecting to websocket servers" + ("="*5))
+        if self.url_state:
+            print ("Connecting url_state")
+            self.ws_state = websocket.WebSocketApp(self.url_state,
+                              on_message = self._car_state_callback,
+                              on_error = self._ws_error,
+                              on_close = self._ws_close)
+            Thread(target=self.ws_state.run_forever).start()
+            self.ws_state.on_open = self._state_c_on_open
+
         if self.url_action:
             self.ws_action = websocket.WebSocketApp(self.url_action,
                               on_message = self._car_message_callback,
@@ -63,28 +83,7 @@ class Car():
                               on_close = self._ws_close)
             Thread(target=self.ws_action.run_forever).start()
             self.ws_action.on_open = self._action_c_on_open
-        
-        if self.url_camera_c:
-            self.ws_camera_c = websocket.WebSocketApp(self.url_camera_c,
-                              on_message = self._camera_c_callback,
-                              on_error = self._ws_error,
-                              on_close = self._ws_close)
-            self.ws_camera_c.on_open = self._camera_c_on_open
-            Thread(target=self.ws_camera_c.run_forever).start()
 
-        """
-        if self.url_camera_l:
-            self.ws_camera_l = yield websocket_connect(self.url_camera_l, on_message_callback=self._camera_l_callback)
-            logging.debug("Connected to ws_camera_l")
-
-        if self.url_camera_r:
-            self.ws_camera_r = yield websocket_connect(self.url_camera_r, on_message_callback=self._camera_r_callback)        
-            logging.debug("Connected to ws_camera_r")  
-
-        if self.url_sensor:
-            self.ws_sensor = yield websocket_connect(self.url_sensor, on_message_callback=self._sensor_callback)        
-            logging.debug("Connected to ws_sensor")
-        """
         logging.debug(("="*5) + "Connected to websocket servers" + ("="*5))
 
     def __sendStep(self, method, step):
@@ -122,20 +121,29 @@ class Car():
             self.car_message_callback(message)
 
     def _action_c_on_open(self, ws):
-
         logging.debug("Action ws connected")
 
     def _camera_c_callback(self, ws, message):
         """This method will be callback for websocket response of car.
         """
-        logging.debug("Camera response")
+        self.frame_c_count += 1
+        frame_rate = self.frame_c_count / (time() - self.frame_c_start_time)
+
+        if self.frame_c_count > 1024:
+            self.frame_c_count = frame_rate
+
+        logging.debug("Camera response FPS: " + str(frame_rate))
         if self.camera_c_callback is not None:
             self.camera_c_callback(message)
 
     def _camera_c_on_open(self, ws):
+        self.frame_c_count = 0
+        self.frame_c_start_time = time()
+        logging.debug("Camera C Connected")
 
-        logging.debug("Camera C Connection, sending `read_camera` messages")
-        ws.send("read_camera")
+    def start_camera(self):
+        logging.debug("Camera C: Sending `read_camera` messages")
+        self.ws_camera_c.send("read_camera")
 
     def _camera_l_callback(self, ws, message):
         """This method will be callback for websocket response of car.

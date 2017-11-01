@@ -40,7 +40,8 @@ class Dataset:
     def add_data(self,data):
        with open(self.directory+'/'+self.filename, 'rb') as newFile:
            header = next(csv.reader(newFile))
-       with open(self.directory+'/'+self.filename, 'ab') as newFile:   
+
+       with open(self.directory+'/'+self.filename, 'ab') as newFile:
            dict_writer = csv.DictWriter(newFile, header, -999)
            dict_writer.writerow(data)
 

@@ -34,14 +34,14 @@ if len(sys.argv) == 2 and sys.argv[1] == "find_my_car":
 
 car_link = "ws://{}:{}".format(car_data['address'], car_data['port'])
 action_link = "{}/action".format(car_link)
-action_link = "{}/state".format(car_link)
 #camera_c_link = "{}/camera_c".format(car_link)
+state_link = "{}/state".format(car_link)
 
 logging.debug("Action Link: " + action_link)
 logging.debug("State Link: " + state_link)
 #logging.debug("Camera C Link: " + camera_c_link)
 
-car = Car(action_link, camera_c_link)
+car = Car(action_link, url_state=state_link)
 
 def handle_camera_c(data):
     stream = io.BytesIO()
