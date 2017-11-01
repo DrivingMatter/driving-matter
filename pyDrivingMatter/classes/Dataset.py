@@ -17,7 +17,7 @@ class Dataset:
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
         if not os.path.exists(self.directory+'/'+self.filename):
-            with open(self.directory+'/'+self.filename,'w', newline='') as newFile:
+            with open(self.directory+'/'+self.filename,'wb') as newFile:
                 newFileWriter = csv.writer(newFile)
                 newFileWriter.writerow(['time','dist1','dist2', 'dist3','camR','camC','camL','action','ack'])
    
@@ -25,7 +25,7 @@ class Dataset:
         imagedirectory=self.directory+'/images'
         ctime=time.time()
         image_name = str(ctime)+ ".jpg"
-        print(image_name)
+        #print(image_name)
         if not os.path.exists(imagedirectory):
             os.makedirs(imagedirectory)
         cv2.imwrite(os.path.join(imagedirectory, image_name), image)
@@ -38,9 +38,9 @@ class Dataset:
 
     
     def add_data(self,data):
-       with open(self.directory+'/'+self.filename, 'r', newline='') as newFile:
+       with open(self.directory+'/'+self.filename, 'rb') as newFile:
            header = next(csv.reader(newFile))
-       with open(self.directory+'/'+self.filename, 'a', newline='') as newFile:   
+       with open(self.directory+'/'+self.filename, 'ab') as newFile:   
            dict_writer = csv.DictWriter(newFile, header, -999)
            dict_writer.writerow(data)
 

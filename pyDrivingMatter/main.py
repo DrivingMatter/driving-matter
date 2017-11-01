@@ -26,12 +26,20 @@ with pyDrivingMatter() as pydm:
 
 car_data = cars[0]
 
+if len(sys.argv) == 2 and sys.argv[1] == "find_my_car":
+    logging.debug ("="*80)
+    logging.debug (car_data)
+    logging.debug ("="*80)
+    sys.exit()
+
 car_link = "ws://{}:{}".format(car_data['address'], car_data['port'])
 action_link = "{}/action".format(car_link)
-camera_c_link = "{}/camera_c".format(car_link)
+action_link = "{}/state".format(car_link)
+#camera_c_link = "{}/camera_c".format(car_link)
 
 logging.debug("Action Link: " + action_link)
-logging.debug("Camera C Link: " + camera_c_link)
+logging.debug("State Link: " + state_link)
+#logging.debug("Camera C Link: " + camera_c_link)
 
 car = Car(action_link, camera_c_link)
 
@@ -41,9 +49,9 @@ def handle_camera_c(data):
     stream.seek(0)
     img = Image.open(stream)
     img = np.asarray(img)
-    dataset=Dataset('dataset/'+time.strftime("%d-%m-%Y"),'dataset.csv')
-    dataset.save_data(img)
-    # cv2.imshow("camera_c", img)
+    # dataset=Dataset('dataset/'+time.strftime("%d-%m-%Y"),'dataset.csv')
+    # dataset.save_data(img)
+    cv2.imshow("camera_c", img)
     stream.seek(0)
     key = cv2.waitKey(1) & 0xFF
 

@@ -63,7 +63,6 @@ class Car():
                               on_close = self._ws_close)
             Thread(target=self.ws_action.run_forever).start()
             self.ws_action.on_open = self._action_c_on_open
-            logging.debug("Connected to ws_action")
         
         if self.url_camera_c:
             self.ws_camera_c = websocket.WebSocketApp(self.url_camera_c,
@@ -72,7 +71,6 @@ class Car():
                               on_close = self._ws_close)
             self.ws_camera_c.on_open = self._camera_c_on_open
             Thread(target=self.ws_camera_c.run_forever).start()
-            logging.debug("Connected to ws_camera_c")
 
         """
         if self.url_camera_l:
