@@ -6,6 +6,7 @@ import cv2
 import time
 import datetime
 import csv
+
 class Dataset:
     directory = None
     filename = None

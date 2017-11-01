@@ -1,10 +1,5 @@
-from pyDrivingMatter import pyDrivingMatter, Car
-from Dataset import Dataset
-from KBhit import KBHit
 import sys
-# import os
 import time
-# import datetime
 from time import sleep
 import logging
 import cv2
@@ -13,6 +8,11 @@ from PIL import Image
 import numpy as np
 
 logging.basicConfig(level=logging.INFO)
+
+from classes.pyDrivingMatter import pyDrivingMatter
+from classes.Car import Car
+from classes.Dataset import Dataset
+from classes.KBhit import KBHit
 
 cars = None
 with pyDrivingMatter() as pydm:
@@ -43,19 +43,21 @@ logging.debug("State Link: " + state_link)
 
 car = Car(action_link, url_state=state_link)
 
-def handle_camera_c(data):
+def handle_state(data, ws):
+    print (data)
     stream = io.BytesIO()
     stream.write(data)
     stream.seek(0)
-    img = Image.open(stream)
-    img = np.asarray(img)
+    print ("Got here")
+    #img = Image.open(stream)
+    #img = np.asarray(img)
     # dataset=Dataset('dataset/'+time.strftime("%d-%m-%Y"),'dataset.csv')
     # dataset.save_data(img)
-    cv2.imshow("camera_c", img)
-    stream.seek(0)
-    key = cv2.waitKey(1) & 0xFF
+    #cv2.imshow("camera_c", img)
+    #stream.seek(0)
+    #key = cv2.waitKey(1) & 0xFF
 
-car.set_camera_c_callback(handle_camera_c)
+car.set_state_callback(handle_state)
 
 try:
     kb = KBHit()
