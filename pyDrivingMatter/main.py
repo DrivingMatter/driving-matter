@@ -7,14 +7,16 @@ import io
 from PIL import Image
 import numpy as np
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 from classes.pyDrivingMatter import pyDrivingMatter
 from classes.Car import Car
 from classes.Dataset import Dataset
 from classes.KBhit import KBHit
 
+
 cars = None
+"""
 with pyDrivingMatter() as pydm:
     while True:
         cars = pydm.available_cars()
@@ -40,15 +42,40 @@ state_link = "{}/state".format(car_link)
 logging.debug("Action Link: " + action_link)
 logging.debug("State Link: " + state_link)
 #logging.debug("Camera C Link: " + camera_c_link)
-
+"""
+car_link = "ws://192.168.8.105:8000"
+action_link = "ws://192.168.8.105:8000/action"
+state_link = "ws://192.168.8.105:8000/state"
 car = Car(action_link, url_state=state_link)
 
+def bytes2int(xbytes):
+    return int.from_bytes(xbytes, 'big')
+
 def handle_state(data, ws):
-    print (data)
+    #print (data)
     stream = io.BytesIO()
     stream.write(data)
     stream.seek(0)
-    print ("Got here")
+    sensor_count = bytes2int(stream.read(4))
+    for _ in range(sensor_count):
+        name = stream.read(16).decode()
+        value = bytes2int(stream.read(4))
+        print ("Sensor: {} value: {} ".format(name, value))
+
+    camera_count = bytes2int(stream.read(4))
+    for _ in range(camera_count):
+        name = stream.read(16).decode()
+        frame_size = bytes2int(stream.read(4))
+        frame = stream.read()
+        print ("Camera: {} Size: {} ".format(name, frame_size))
+
+        #img_stream = io.BytesIO()
+        #img_stream.write(frame)
+        #img_stream.seek(0)
+        img = Image.open(io.BytesIO(frame))
+        img = np.asarray(img)
+        cv2.imshow(name, img)
+
     #img = Image.open(stream)
     #img = np.asarray(img)
     # dataset=Dataset('dataset/'+time.strftime("%d-%m-%Y"),'dataset.csv')
