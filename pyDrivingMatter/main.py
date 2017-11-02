@@ -7,7 +7,7 @@ import io
 from PIL import Image
 import numpy as np
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 from classes.pyDrivingMatter import pyDrivingMatter
 from classes.Car import Car
