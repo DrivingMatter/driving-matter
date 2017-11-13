@@ -44,8 +44,6 @@ class Car():
             Thread(target=self.ws_action.run_forever).start()
             self.ws_action.on_open = self._action_c_on_open
 
-        logging.debug(("="*5) + "Connected to websocket servers" + ("="*5))
-
     def __sendStep(self, method, step):
         current_time_epoch = int(time())
         """forward 1 1234123213"""
@@ -81,8 +79,8 @@ class Car():
             self.state_callback(message, ws)
 
     def _state_c_on_open(self, ws):
-        ws.send("send_state")
-        #ws.send("read_state")
+        #ws.send("send_state")
+        ws.send("read_state")
         # ws.send("stop_read_state") # This is also possible, think where to use
         print ("Websocket state opened, send_state sent")
 

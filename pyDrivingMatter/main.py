@@ -14,9 +14,11 @@ from classes.Car import Car
 from classes.Dataset import Dataset
 from classes.KBhit import KBHit
 
+import pickle
+from time import time
 
 cars = None
-"""
+
 with pyDrivingMatter() as pydm:
     while True:
         cars = pydm.available_cars()
@@ -36,53 +38,44 @@ if len(sys.argv) == 2 and sys.argv[1] == "find_my_car":
 
 car_link = "ws://{}:{}".format(car_data['address'], car_data['port'])
 action_link = "{}/action".format(car_link)
-#camera_c_link = "{}/camera_c".format(car_link)
 state_link = "{}/state".format(car_link)
 
 logging.debug("Action Link: " + action_link)
 logging.debug("State Link: " + state_link)
-#logging.debug("Camera C Link: " + camera_c_link)
-"""
-car_link = "ws://192.168.8.105:8000"
-action_link = "ws://192.168.8.105:8000/action"
-state_link = "ws://192.168.8.105:8000/state"
+
 car = Car(action_link, url_state=state_link)
 
-def bytes2int(xbytes):
-    return int.from_bytes(xbytes, 'big')
+start_time = int(time())
+total_requests = 1
+dataset = Dataset()
 
 def handle_state(data, ws):
-    #print (data)
-    stream = io.BytesIO()
-    stream.write(data)
-    stream.seek(0)
-    sensor_count = bytes2int(stream.read(4))
-    for _ in range(sensor_count):
-        name = stream.read(16).decode()
-        value = bytes2int(stream.read(4))
-        print ("Sensor: {} value: {} ".format(name, value))
+    global total_requests, start_time, dataset
 
-    camera_count = bytes2int(stream.read(4))
-    for _ in range(camera_count):
-        name = stream.read(16).decode()
-        frame_size = bytes2int(stream.read(4))
-        frame = stream.read()
-        print ("Camera: {} Size: {} ".format(name, frame_size))
+    #total_requests += 1
 
-        #img_stream = io.BytesIO()
-        #img_stream.write(frame)
-        #img_stream.seek(0)
-        img = Image.open(io.BytesIO(frame))
-        img = np.asarray(img)
-        cv2.imshow(name, img)
+    #elapsed = int(time()) - start_time
 
-    #img = Image.open(stream)
-    #img = np.asarray(img)
-    # dataset=Dataset('dataset/'+time.strftime("%d-%m-%Y"),'dataset.csv')
-    # dataset.save_data(img)
-    #cv2.imshow("camera_c", img)
-    #stream.seek(0)
-    #key = cv2.waitKey(1) & 0xFF
+    #request_per_sec = total_requests / elapsed
+
+    #print ("RPS: " + str(request_per_sec))
+
+    print (int(time()))
+
+    data = pickle.loads(data)
+    sensors = data['sensors']
+
+    datavector = sensors    
+
+    camera_names = [key for key in data if key.startswith('camera')]
+    for name in camera_names:
+        img = Image.open(io.BytesIO(data[name]))
+        datavector[name] = img
+
+        cv2.imshow(name, np.asarray(img))
+        cv2.waitKey(1) # CV2 Devil - Don't dare to remove
+
+    dataset.save_data(datavector)
 
 car.set_state_callback(handle_state)
 
@@ -104,4 +97,4 @@ try:
                 car.stop()              
 finally:
     kb.set_normal_term()    
-    cv2.destroyWindow("camera_c")
+    #cv2.destroyWindow("camera_c")
