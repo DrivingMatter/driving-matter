@@ -9,7 +9,7 @@ import csv
 
 class Dataset:
     def __init__(self, base = "dataset/", filename = "dataset.csv"):
-        self.base = base
+        self.base = os.getcwd() + "/" + base
         self.directory = self.base + str(time.time()) + "/"
         self.csv_file_path = self.directory + filename
         self.images_path = self.directory + "images/"
@@ -22,7 +22,7 @@ class Dataset:
                 # file created.
                 pass
                 
-        self.csv_file_write = open(self.csv_file_path, 'ab')
+        self.csv_file_writer = open(self.csv_file_path, 'ab')
         self.header = None
 
     def save_data(self, datavector):
@@ -32,22 +32,22 @@ class Dataset:
             csv_writer.writerow(self.header)
 
         image_name = str(time.time())+ ".jpg"
-
+        
         for key in datavector:
             value = datavector[key]
-
             # save images
-            if key.startswith("camera"):
-                name = key + image_name
-                path = self.images_path + "_" + name
+            if "camera" in key:
+                name = key + "_" + image_name
+                path = self.images_path + name
                 value.save(path)        
                 datavector[key] = path
 
         self.add_data(datavector)
     
     def add_data(self, data):
-       dict_writer = csv.DictWriter(self.csv_file_write, self.header, -999)
+       dict_writer = csv.DictWriter(self.csv_file_writer, self.header, -999)
        dict_writer.writerow(data)
+       self.csv_file_writer.flush()
 
     def get_dataset(self):
         data = pandas.read_csv(self.csv_file_path)
