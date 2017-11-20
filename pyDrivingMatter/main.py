@@ -59,6 +59,7 @@ timer_index = 0
 dataset_time = None
 dataset_queue = Queue()
 
+"""
 def dataset_writer():
     global dataset_queue, dataset
     while True:
@@ -67,6 +68,7 @@ def dataset_writer():
 
 t = Thread(target=dataset_writer)
 t.start()
+"""
 
 def handle_state(data, ws):
     global total_requests, start_time, dataset, previous_datavector, timer_index, timer, dataset_time, dataset_queue
@@ -137,9 +139,8 @@ def handle_state(data, ws):
         
         #dataset_queue.put(datavector)
         dataset.save_data(datavector)
-    else:
-        dataset_time = time()
-
+    
+    dataset_time = time()
     previous_datavector = current_datavector
 
 car.set_state_callback(handle_state)
