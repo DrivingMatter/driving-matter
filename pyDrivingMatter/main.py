@@ -18,7 +18,6 @@ from classes.Car import Car
 from classes.Dataset import Dataset
 from classes.KBhit import KBHit
 
-
 cars = None
 
 # with pyDrivingMatter() as pydm:
@@ -39,8 +38,9 @@ cars = None
 #     sys.exit()
 
 #car_link = "ws://{}:{}".format(car_data['address'], car_data['port'])
-car_link = "ws://{}:{}".format("192.168.137.2", "8000")
+#car_link = "ws://{}:{}".format("192.168.137.2", "8000")
 #car_link = "ws://{}:{}".format("192.168.0.120", "8000")
+car_link = "ws://{}:{}".format("192.168.8.109", "8000")
 
 action_link = "{}/action".format(car_link)
 state_link = "{}/state".format(car_link)
@@ -59,16 +59,6 @@ timer_index = 0
 dataset_time = None
 dataset_queue = Queue()
 
-"""
-def dataset_writer():
-    global dataset_queue, dataset
-    while True:
-        dataset_vector = dataset_queue.get()
-        dataset.save_data(dataset_vector)
-
-t = Thread(target=dataset_writer)
-t.start()
-"""
 
 def handle_state(data, ws):
     global total_requests, start_time, dataset, previous_datavector, timer_index, timer, dataset_time, dataset_queue
@@ -102,12 +92,8 @@ def handle_state(data, ws):
         else:
             logging.debug("None frame received. Camera: " + name)
 
-    if previous_datavector is not None:
+    if (previous_datavector is not None) and (previous_datavector['car_action_id'] != current_datavector['car_action_id']):
         datavector = {}
-
-        if previous_datavector['car_state'] == current_datavector['car_state']:
-            # TODO: It not good to save all dataset.
-            pass
         
         dataset_delay = int((time() - dataset_time) * 1000)
 
@@ -139,8 +125,9 @@ def handle_state(data, ws):
         
         #dataset_queue.put(datavector)
         dataset.save_data(datavector)
+
+        dataset_time = time()
     
-    dataset_time = time()
     previous_datavector = current_datavector
 
 car.set_state_callback(handle_state)
@@ -150,8 +137,7 @@ try:
     while True:
         if kb.kbhit():
             c = kb.carkey()
-
-            if c == 0: # Up
+            if c == 0:   # Up
                 car.forward()            
             elif c == 1: # Right
                 car.forwardRight() 
