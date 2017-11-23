@@ -25,9 +25,9 @@ class Dataset:
         self.csv_file_writer = open(self.csv_file_path, 'ab')
         self.header = None
 
-    def save_data(self, datavector):
+    def save_data(self, datavector, dataset_title):
         if self.header is None:
-            self.header = [key for key in datavector]
+            self.header = dataset_title
             csv_writer = csv.writer(self.csv_file_writer)
             csv_writer.writerow(self.header)
 

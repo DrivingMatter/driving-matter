@@ -59,7 +59,6 @@ timer_index = 0
 dataset_time = None
 dataset_queue = Queue()
 
-
 def handle_state(data, ws):
     global total_requests, start_time, dataset, previous_datavector, timer_index, timer, dataset_time, dataset_queue
     current_datavector = pickle.loads(data)
@@ -75,7 +74,10 @@ def handle_state(data, ws):
         timer[0] = (timer[0] + timer[1]) / 2  
         timer[1] = 0
 
-    print ("RPS: " + str(timer[0]) + "\n\nTotal: " + str(total_requests))
+    pc_rps = timer[0]
+    car_rps = current_datavector['car_rps']
+
+    print ("PC RPS: " + str(pc_rps) + "\n\nCar RPS: " + str(car_rps) + "\n\nTotal: " + str(total_requests))
 
     sensors = current_datavector['sensors']
 
@@ -94,37 +96,46 @@ def handle_state(data, ws):
 
     if (previous_datavector is not None) and (previous_datavector['car_action_id'] != current_datavector['car_action_id']):
         datavector = {}
-        
+        datavector_title = []
+
         dataset_delay = int((time() - dataset_time) * 1000)
 
         # Misc Info
         datavector['timestamp'] = time()
         datavector['dataset_delay'] = dataset_delay
+        datavector_title = ['timestamp', 'dataset_delay']
+
 
         # Previous State
         for sensor_name in previous_datavector['sensors']:
             name = "previous_sensor_{}".format(sensor_name)
             datavector[name] = previous_datavector['sensors'][sensor_name]
+            datavector_title.append(name)
 
         datavector['previous_state'] = previous_datavector['car_state']
+        datavector_title.append('previous_state')
 
         for camera_name in camera_names:
             name = "previous_camera_{}".format(camera_name) # Camera names
             datavector[name] = previous_datavector[camera_name]
+            datavector_title.append(name)
 
         # Current State
         for sensor_name in current_datavector['sensors']:
             name = "current_sensor_{}".format(sensor_name)
             datavector[name] = current_datavector['sensors'][sensor_name]
+            datavector_title.append(name)
 
         datavector['current_state'] = current_datavector['car_state']
+        datavector_title.append('current_state')
 
         for camera_name in camera_names:
             name = "current_{}".format(camera_name) # Camera names
             datavector[name] = current_datavector[camera_name]
+            datavector_title.append(name)
         
         #dataset_queue.put(datavector)
-        dataset.save_data(datavector)
+        dataset.save_data(datavector, datavector_title)
 
         dataset_time = time()
     
