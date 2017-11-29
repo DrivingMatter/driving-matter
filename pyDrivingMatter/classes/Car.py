@@ -28,7 +28,6 @@ class Car():
         logging.debug(("="*5) + "Connecting to websocket servers" + ("="*5))
 
         if self.url_state:
-            print ("Connecting url_state")
             self.ws_state = websocket.WebSocketApp(self.url_state,
                               on_message = self._state_callback,
                               on_error = self._ws_error,

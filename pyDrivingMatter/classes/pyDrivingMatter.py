@@ -1,14 +1,9 @@
-import websocket
-import io
-import cv2
-import numpy as np
-from PIL import Image
-from time import time, sleep
+from time import sleep
 import logging
-from threading import Thread
 
-from .KBhit import KBHit
 from .BrowseCar import BrowseCar
+
+logger = logging.getLogger(__name__)
 
 class pyDrivingMatter():
     bc = None
@@ -18,6 +13,27 @@ class pyDrivingMatter():
 
     def available_cars(self):
         return self.bc.get_available_car()
+
+    def get_car(self):
+        cars = []
+        while True:
+            cars = pydm.available_cars()
+            if len(cars) == 0:
+                logger.debug("Waiting for cars on network")
+            else: 
+                break
+            sleep(1)
+
+        car_data = cars[0]
+
+        if len(sys.argv) == 2 and sys.argv[1] == "find_my_car":
+            logging.debug ("="*80)
+            logging.debug (car_data)
+            logging.debug ("="*80)
+            sys.exit()
+
+        car_link = "ws://{}:{}".format(car_data['address'], car_data['port'])
+        return car_data, car_link
 
     # Destructor
     def __enter__(self):
