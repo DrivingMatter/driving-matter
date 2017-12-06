@@ -1,4 +1,9 @@
 import sys
+from os import path
+print path.dirname(path.dirname(path.abspath(__file__)))
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
+import sys
 import base64
 from PySide import QtCore, QtGui
 sys.modules['PyQt5.QtGui'] = QtGui
