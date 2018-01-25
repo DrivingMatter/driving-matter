@@ -1,12 +1,13 @@
 import sys
 from os import path
-print path.dirname(path.dirname(path.abspath(__file__)))
+assert(sys.version_info.major == 3)
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 import sys
 import base64
-from PySide import QtCore, QtGui
-sys.modules['PyQt5.QtGui'] = QtGui
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
+#sys.modules['PyQt5.QtGui'] = QtGui
 from classes.GUI import Ui_MainWindow
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 capture_thread = None
 #pydm = pyDrivingMatter()
 #car_data, car_link = pydm.get_car()
+
 class OwnImageWidget(QWidget):
     def __init__(self, parent=None):
         super(OwnImageWidget, self).__init__(parent)
@@ -39,7 +41,7 @@ class OwnImageWidget(QWidget):
         self.setMinimumSize(sz)
         self.update()
 
-class MyWindowClass(QtGui.QMainWindow):
+class MyWindowClass(QMainWindow):
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__()
@@ -138,7 +140,7 @@ def handle_state(data, ws):
         else:
             logger.debug("None frame received. Camera: " + name)
 
-app = QtGui.QApplication(sys.argv)
+app = QApplication(sys.argv)
 w = MyWindowClass(None)
 w.setWindowTitle('Driving Matter')
 w.show()
