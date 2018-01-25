@@ -56,28 +56,59 @@ class MyWindowClass(QMainWindow):
         self.ui.stopBtn.clicked.connect(self.stop_clicked)
 
         self.ui.startButton.clicked.connect(self.start_clicked)
-        
-        self.window_width = self.ui.ImgWidgetleft.frameSize().width()
 
-        self.window_height = self.ui.ImgWidgetleft.frameSize().height()
-        self.ImgWidgetleft = OwnImageWidget(self.ui.ImgWidgetleft)
-        self.ImgWidgetright = OwnImageWidget(self.ui.ImgWidgetright)
-        self.ImgWidgetcenter = OwnImageWidget(self.ui.ImgWidgetcenter)    
+        #self.window_width = self.ui.ImgWidgetleft.frameSize().width()
+        #self.window_height = self.ui.ImgWidgetleft.frameSize().height()
+        #print (self.window_height)
+        #print (self.window_width)
+
+        self.img_left = self.ui.img_left
+        self.img_right = self.ui.img_right
+        self.img_center = self.ui.img_center    
+
+        self.add_log("DrivingMatter GUI Started.")
+        self.load_car() 
+        self.show_image()
+
+    def add_log(self, message):
+        from datetime import datetime
+        message = str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + ": " + message 
+        self.ui.logdata.appendPlainText(message)
+
+        #scroll log textedit to bottom
+        self.ui.logdata.verticalScrollBar().setValue(self.ui.logdata.verticalScrollBar().maximum());
+
+    def load_car(self):
+        car_link = "ws://{}:{}".format("192.168.43.60", "8000")
+        action_link = "{}/action".format(car_link)
+        state_link = "{}/state".format(car_link)
         
+        logging.debug("Action Link: " + action_link)
+        logging.debug("State Link: " + state_link)
+
+        self.car = Car(action_link, url_state=state_link)
+        self.rps_counter = RPSCounter()
+
+        self.car.set_state_callback(self.handle_state)
+
     def stop_clicked(self):
-        car.stop() 
+        self.car.stop() 
 
     def backward_clicked(self):
-        car.backward() 
+        self.add_log("Car::backward()")
+        self.car.backward() 
 
     def right_clicked(self):
-        car.forwardRight()             
+        self.add_log("Car::right()")
+        self.car.forwardRight()             
 
     def left_clicked(self):
-        car.forwardLeft() 
+        self.add_log("Car::left()")
+        self.car.forwardLeft() 
 
     def forward_clicked(self):
-        car.forward() 
+        self.add_log("Car::forward()")
+        self.car.forward() 
     
     def start_clicked(self):
         global running
@@ -85,95 +116,80 @@ class MyWindowClass(QMainWindow):
         self.ui.startButton.setEnabled(False)
         self.ui.startButton.setText('  Starting...  ')  
 
+    def show_image(self):
+        
+        
+        qim = QtGui.QImage("images/no-image.png") # PNG only
+        qim = qim.scaled(200,200, aspectRatioMode=QtCore.Qt.KeepAspectRatio, transformMode=QtCore.Qt.SmoothTransformation)
+        self.ui.img_left.setPixmap(QtGui.QPixmap.fromImage(qim))
+        self.ui.img_right.setPixmap(QtGui.QPixmap.fromImage(qim))
+        self.ui.img_center.setPixmap(QtGui.QPixmap.fromImage(qim))
+        self.ui.img_left.adjustSize()
 
-car_link = "ws://{}:{}".format("192.168.43.60", "8000")
+        self.add_log("Showing default images.")
 
-action_link = "{}/action".format(car_link)
-state_link = "{}/state".format(car_link)
+        #image_profile = image_profile.scaled(250,250, aspectRatioMode=QtCore.Qt.KeepAspectRatio, transformMode=QtCore.Qt.SmoothTransformation) # To scale image for example and keep its Aspect Ration    
+        #label_Image.setPixmap(QtGui.QPixmap.fromImage(image_profile)) 
+   
+        #from scipy import misc
+        #img = misc.imread('sample.jpg')
 
-logging.debug("Action Link: " + action_link)
-logging.debug("State Link: " + state_link)
+        #img_height, img_width, img_colors = img.shape
+        #scale_w = float(self.window_width) / float(img_width)
+        #scale_h = float(self.window_height) / float(img_height)
+        #scale = 1 #0 if (min([scale_w, scale_h]) == 0) else 1
+        #img = cv2.resize(img, None, fx=scale, fy=scale, interpolation = cv2.INTER_CUBIC)
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        #height, width, bpc = img.shape
+        #bpl = bpc * width
+        #image = QtGui.QImage(img.data, width, height, bpl, QtGui.QImage.Format_RGB888)
 
-car = Car(action_link, url_state=state_link)
+        #self.img_left.setImage(image)
 
-rps_counter = RPSCounter()
+    def handle_state(self, data, ws):
+        global rps_counter
 
-def handle_state(data, ws):
-    global rps_counter
-    
-    
-    current_datavector = pickle.loads(data,encoding='bytes')
-    #pc_rps = rps_counter.get()
 
-    #logger.debug("PC RPS: " + str(pc_rps) + "\n\nCar RPS: " + str(car_rps) + "\n\nTotal: " + str(total_requests))
+        current_datavector = pickle.loads(data,encoding='bytes')
+        #pc_rps = rps_counter.get()
 
-    sensors = current_datavector['sensors']
-    logger.debug(sensors)
-    camera_names = [key for key in current_datavector if key.startswith('camera')]
-    for name in camera_names:
-        frame = current_datavector[name]
-        if frame != None:
-            img = Image.open(io.BytesIO(frame))
-            current_datavector[name] = img
-            cv2.imshow(name, np.asarray(img))
-            cv2.waitKey(1) # CV2 Devil - Don't dare to remove
+        #logger.debug("PC RPS: " + str(pc_rps) + "\n\nCar RPS: " + str(car_rps) + "\n\nTotal: " + str(total_requests))
 
-            ###### This May Not Work ################
-            if w!=None:
-                w.ui.startButton.setText('Camera is live')
-                img_height, img_width, img_colors = img.shape
-                scale_w = float(w.window_width) / float(img_width)
-                scale_h = float(w.window_height) / float(img_height)
-                scale = min([scale_w, scale_h])
+        sensors = current_datavector['sensors']
+        logger.debug(sensors)
+        camera_names = [key for key in current_datavector if key.startswith('camera')]
+        for name in camera_names:
+            frame = current_datavector[name]
+            if frame != None:
+                img = Image.open(io.BytesIO(frame))
+                current_datavector[name] = img
+                cv2.imshow(name, np.asarray(img))
+                cv2.waitKey(1) # CV2 Devil - Don't dare to remove
 
-                if scale == 0:
-                    scale = 1
-            
-                img = cv2.resize(img, None, fx=scale, fy=scale, interpolation = cv2.INTER_CUBIC)
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                height, width, bpc = img.shape
-                bpl = bpc * width
-                image = QtGui.QImage(img.data, width, height, bpl, QtGui.QImage.Format_RGB888)
-                camera_widget=ImgWidget+name
-                w.camera_widget.setImage(image)
-            ########### ##############################    
-        else:
-            logger.debug("None frame received. Camera: " + name)
+                ###### This May Not Work ################
+                if w!=None:
+                    w.ui.startButton.setText('Camera is live')
+                    img_height, img_width, img_colors = img.shape
+                    scale_w = float(w.window_width) / float(img_width)
+                    scale_h = float(w.window_height) / float(img_height)
+                    scale = min([scale_w, scale_h])
+
+                    if scale == 0:
+                        scale = 1
+                
+                    img = cv2.resize(img, None, fx=scale, fy=scale, interpolation = cv2.INTER_CUBIC)
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    height, width, bpc = img.shape
+                    bpl = bpc * width
+                    image = QtGui.QImage(img.data, width, height, bpl, QtGui.QImage.Format_RGB888)
+                    camera_widget=ImgWidget+name
+                    w.camera_widget.setImage(image)
+                ########### ##############################    
+            else:
+                logger.debug("None frame received. Camera: " + name)
 
 app = QApplication(sys.argv)
 w = MyWindowClass(None)
 w.setWindowTitle('Driving Matter')
 w.show()
-car.set_state_callback(handle_state)
-
-# def key_controls():
-#     try:
-#         kb = KBHit()
-#         while True:
-#             if kb.kbhit():
-#                 c = kb.carkey()
-#                 if c == 0:   # Up
-#                     car.forward()            
-#                 elif c == 1: # Right
-#                     car.forwardRight() 
-#                 elif c == 2: # Down
-#                     car.backward()              
-#                 elif c == 3: # Left
-#                     car.forwardLeft()              
-#                 elif c == 4: # Space
-#                     car.stop()              
-#     finally:
-#         kb.set_normal_term()    
-#         cv2.destroyAllWindows()
-
-# capture_thread = threading.Thread(target=key_controls)
-# capture_thread.start()
-# key_controls()
-
-
-
-
-
-
 app.exec_()
-

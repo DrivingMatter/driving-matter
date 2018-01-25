@@ -199,24 +199,24 @@ font: 20pt &quot;MS Shell Dlg 2&quot;;</string>
 color: rgb(217, 217, 217) !important;</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="1" column="0">
-        <widget class="Line" name="line_8">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="1" column="3" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+        <widget class="QLabel" name="img_center">
+         <property name="text">
+          <string>TextLabel</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="6">
-        <widget class="Line" name="line_9">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="1" column="5" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+        <widget class="QLabel" name="img_right">
+         <property name="text">
+          <string>TextLabel</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
-        <widget class="Line" name="line_7">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="1" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+        <widget class="QLabel" name="img_left">
+         <property name="text">
+          <string>TextLabel</string>
          </property>
         </widget>
        </item>
@@ -227,8 +227,8 @@ color: rgb(217, 217, 217) !important;</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="Line" name="line_5">
+       <item row="2" column="3">
+        <widget class="Line" name="line_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -241,6 +241,34 @@ color: rgb(217, 217, 217) !important;</string>
          </property>
         </widget>
        </item>
+       <item row="1" column="6">
+        <widget class="Line" name="line_9">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="Line" name="line_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="Line" name="line_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="Line" name="line_8">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="2">
         <widget class="Line" name="line_10">
          <property name="orientation">
@@ -248,40 +276,10 @@ color: rgb(217, 217, 217) !important;</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="3">
-        <widget class="Line" name="line_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="1">
         <widget class="Line" name="line_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="5">
-        <widget class="QWidget" name="ImgWidgetright" native="true">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(255, 255, 255);</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QWidget" name="ImgWidgetleft" native="true">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(255, 255, 255);
-color: rgb(255, 255, 255);</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QWidget" name="ImgWidgetcenter" native="true">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(255, 255, 255);
-color: rgb(255, 255, 255);</string>
          </property>
         </widget>
        </item>
@@ -295,7 +293,7 @@ color: rgb(255, 255, 255);</string>
       </layout>
      </widget>
     </item>
-    <item row="3" column="0">
+    <item row="2" column="0">
      <widget class="QWidget" name="widget" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -307,26 +305,6 @@ color: rgb(255, 255, 255);</string>
        <string notr="true">background-color: rgb(217, 217, 217) !important;</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="1" column="0">
-        <widget class="QTabWidget" name="tabWidget">
-         <property name="styleSheet">
-          <string notr="true">background-color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="tab">
-          <attribute name="title">
-           <string>Server</string>
-          </attribute>
-         </widget>
-         <widget class="QWidget" name="tab_2">
-          <attribute name="title">
-           <string>Console</string>
-          </attribute>
-         </widget>
-        </widget>
-       </item>
        <item row="1" column="1">
         <layout class="QGridLayout" name="gridLayout_6">
          <property name="horizontalSpacing">
@@ -348,6 +326,11 @@ color: rgb(255, 255, 255);</string>
              <width>50</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
            </property>
            <property name="styleSheet">
             <string notr="true">background-color: rgb(175, 175, 175);
@@ -372,6 +355,11 @@ selection-background-color: rgb(199, 199, 199);</string>
              <width>50</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
            </property>
            <property name="focusPolicy">
             <enum>Qt::StrongFocus</enum>
@@ -403,6 +391,11 @@ selection-background-color: rgb(199, 199, 199);</string>
              <height>30</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="styleSheet">
             <string notr="true">background-color: rgb(175, 175, 175);
 color: rgb(47, 47, 47);
@@ -426,6 +419,11 @@ selection-background-color: rgb(199, 199, 199);</string>
              <width>50</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
            </property>
            <property name="styleSheet">
             <string notr="true">background-color: rgb(175, 175, 175);
@@ -451,6 +449,11 @@ selection-background-color: rgb(199, 199, 199);</string>
              <height>30</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
            <property name="styleSheet">
             <string notr="true">background-color: rgb(175, 175, 175);
 color: rgb(47, 47, 47);
@@ -470,6 +473,27 @@ selection-background-color: rgb(199, 199, 199);</string>
          </property>
         </widget>
        </item>
+       <item row="1" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Log</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPlainTextEdit" name="logdata">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="plainText">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
     </item>
@@ -481,7 +505,7 @@ selection-background-color: rgb(199, 199, 199);</string>
      <x>0</x>
      <y>0</y>
      <width>702</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
