@@ -2,11 +2,11 @@ from time import time
 
 class RPSCounter:
     def __init__(self):
-        start_time = time()
-        total_requests = 1
-        previous_datavector = None
-        timer = [0, 0]
-        timer_index = 0
+        self.start_time = time()
+        self.total_requests = 1
+        self.previous_datavector = None
+        self.timer = [0, 0]
+        self.timer_index = 0
 
     def get(self):
         self.total_requests += 1

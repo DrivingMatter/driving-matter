@@ -6,9 +6,11 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 import sys
 import base64
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QInputDialog, QLineEdit
 #sys.modules['PyQt5.QtGui'] = QtGui
-from classes.GUI import Ui_MainWindow
+from GUI import Ui_MainWindow
+from GUIWriter import Writer
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import threading
@@ -19,32 +21,28 @@ from PIL import Image
 import numpy as np
 import pickle
 
+import logging
+import numpy as np
+import pickle
+from time import time
+
 from classes.pyDrivingMatter import pyDrivingMatter
 from classes.Car import Car
 from classes.KBhit import KBHit
 from classes.Misc import RPSCounter
-w=None
+import base64
+import json
+import socket
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-capture_thread = None
-#pydm = pyDrivingMatter()
-#car_data, car_link = pydm.get_car()
-
-class OwnImageWidget(QWidget):
-    def __init__(self, parent=None):
-        super(OwnImageWidget, self).__init__(parent)
-        self.image = None
-
-    def setImage(self, image):
-        self.image = image
-        sz = image.size()
-        self.setMinimumSize(sz)
-        self.update()
 
 class MyWindowClass(QMainWindow):
 
     def __init__(self, parent=None):
         super(self.__class__, self).__init__()
+        self.car = None
+        self.rps_counter = None
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -54,21 +52,42 @@ class MyWindowClass(QMainWindow):
         self.ui.leftBtn.clicked.connect(self.left_clicked)
         self.ui.rightBtn.clicked.connect(self.right_clicked)
         self.ui.stopBtn.clicked.connect(self.stop_clicked)
-
         self.ui.startButton.clicked.connect(self.start_clicked)
 
-        #self.window_width = self.ui.ImgWidgetleft.frameSize().width()
-        #self.window_height = self.ui.ImgWidgetleft.frameSize().height()
-        #print (self.window_height)
-        #print (self.window_width)
+        self.ui.actionOpen_Writer.triggered.connect(self.open_writer)
+        self.ui.actionExit.triggered.connect(self.exit)
+        self.ui.actionAbout.triggered.connect(self.about)
 
         self.img_left = self.ui.img_left
         self.img_right = self.ui.img_right
         self.img_center = self.ui.img_center    
 
+        self.camera_label = {
+            'camera_l': self.img_left,
+            'camera_c': self.img_center,
+            'camera_r': self.img_right
+        }
+
+        self.sensor_label = {
+            'left': self.ui.sensor_left,
+            'center': self.ui.sensor_center,
+            'right': self.ui.sensor_right
+        }
+
         self.add_log("DrivingMatter GUI Started.")
-        self.load_car() 
         self.show_image()
+
+    def open_writer(self):
+        self.add_log("OpenWriter called")
+        self.writer = Writer(self.car)
+        self.writer.setWindowTitle('Driving Matter - Writer')
+        self.writer.show()
+
+    def exit(self):
+        self.add_log("Exit called")
+        
+    def about(self):
+        self.add_log("About called")
 
     def add_log(self, message):
         from datetime import datetime
@@ -79,18 +98,30 @@ class MyWindowClass(QMainWindow):
         self.ui.logdata.verticalScrollBar().setValue(self.ui.logdata.verticalScrollBar().maximum());
 
     def load_car(self):
-        car_link = "ws://{}:{}".format("192.168.43.60", "8000")
-        action_link = "{}/action".format(car_link)
-        state_link = "{}/state".format(car_link)
+        ip, okPressed = QInputDialog.getText(self, "Car IP Address","Enter IP Address", QLineEdit.Normal, "192.168.137.2")
+        if okPressed:
+            try:
+                socket.inet_aton(ip) # throw exception in invalid ip
+                
+                car_link = "ws://{}:{}".format(ip, "8000")
+
+                action_link = "{}/action".format(car_link)
+                state_link = "{}/state".format(car_link)
+
+                self.add_log("Action Link: " + action_link)
+                self.add_log("State Link: " + state_link)
+
+                self.car = Car(action_link, url_state=state_link)
+                self.rps_counter = RPSCounter()
+                self.car.set_state_callback(self._handle_dataset_response)
+
+                self.ui.startButton.setText('Started')
+            except socket.error:
+                pass # leave the condition
+        else:
+            self.ui.startButton.setText('Start')    
+            self.ui.startButton.setEnabled(False)
         
-        logging.debug("Action Link: " + action_link)
-        logging.debug("State Link: " + state_link)
-
-        self.car = Car(action_link, url_state=state_link)
-        self.rps_counter = RPSCounter()
-
-        self.car.set_state_callback(self.handle_state)
-
     def stop_clicked(self):
         self.car.stop() 
 
@@ -114,12 +145,11 @@ class MyWindowClass(QMainWindow):
         global running
         running = True
         self.ui.startButton.setEnabled(False)
-        self.ui.startButton.setText('  Starting...  ')  
+        self.ui.startButton.setText('Starting...')  
+        self.load_car() 
 
     def show_image(self):
-        
-        
-        qim = QtGui.QImage("images/no-image.png") # PNG only
+        qim = QtGui.QImage("../images/no-image.png") # PNG only
         qim = qim.scaled(200,200, aspectRatioMode=QtCore.Qt.KeepAspectRatio, transformMode=QtCore.Qt.SmoothTransformation)
         self.ui.img_left.setPixmap(QtGui.QPixmap.fromImage(qim))
         self.ui.img_right.setPixmap(QtGui.QPixmap.fromImage(qim))
@@ -128,65 +158,38 @@ class MyWindowClass(QMainWindow):
 
         self.add_log("Showing default images.")
 
-        #image_profile = image_profile.scaled(250,250, aspectRatioMode=QtCore.Qt.KeepAspectRatio, transformMode=QtCore.Qt.SmoothTransformation) # To scale image for example and keep its Aspect Ration    
-        #label_Image.setPixmap(QtGui.QPixmap.fromImage(image_profile)) 
-   
-        #from scipy import misc
-        #img = misc.imread('sample.jpg')
-
-        #img_height, img_width, img_colors = img.shape
-        #scale_w = float(self.window_width) / float(img_width)
-        #scale_h = float(self.window_height) / float(img_height)
-        #scale = 1 #0 if (min([scale_w, scale_h]) == 0) else 1
-        #img = cv2.resize(img, None, fx=scale, fy=scale, interpolation = cv2.INTER_CUBIC)
-        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        #height, width, bpc = img.shape
-        #bpl = bpc * width
-        #image = QtGui.QImage(img.data, width, height, bpl, QtGui.QImage.Format_RGB888)
-
-        #self.img_left.setImage(image)
-
-    def handle_state(self, data, ws):
-        global rps_counter
-
-
-        current_datavector = pickle.loads(data,encoding='bytes')
-        #pc_rps = rps_counter.get()
+    def _handle_dataset_response(self, data, ws):
+        current_datavector = json.loads(data)
+        
+        pc_rps = self.rps_counter.get()
 
         #logger.debug("PC RPS: " + str(pc_rps) + "\n\nCar RPS: " + str(car_rps) + "\n\nTotal: " + str(total_requests))
-
         sensors = current_datavector['sensors']
-        logger.debug(sensors)
+        
+        for key, value in sensors.items():
+            self.sensor_label[key].setText(str(value))
+
+            if value:
+                self.sensor_label[key].setStyleSheet('color: red')
+            else:
+                self.sensor_label[key].setStyleSheet('color: green')
+
+
         camera_names = [key for key in current_datavector if key.startswith('camera')]
         for name in camera_names:
-            frame = current_datavector[name]
-            if frame != None:
-                img = Image.open(io.BytesIO(frame))
-                current_datavector[name] = img
-                cv2.imshow(name, np.asarray(img))
-                cv2.waitKey(1) # CV2 Devil - Don't dare to remove
+            frame_data = current_datavector[name] # [type, array, shape]
 
-                ###### This May Not Work ################
-                if w!=None:
-                    w.ui.startButton.setText('Camera is live')
-                    img_height, img_width, img_colors = img.shape
-                    scale_w = float(w.window_width) / float(img_width)
-                    scale_h = float(w.window_height) / float(img_height)
-                    scale = min([scale_w, scale_h])
+            frame = base64.decodestring(frame_data[1].encode("utf-8"))
+            frame = np.frombuffer(frame, frame_data[0]) # https://stackoverflow.com/questions/30698004/how-can-i-serialize-a-numpy-array-while-preserving-matrix-dimensions    
+            frame = frame.reshape(frame_data[2])
 
-                    if scale == 0:
-                        scale = 1
-                
-                    img = cv2.resize(img, None, fx=scale, fy=scale, interpolation = cv2.INTER_CUBIC)
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                    height, width, bpc = img.shape
-                    bpl = bpc * width
-                    image = QtGui.QImage(img.data, width, height, bpl, QtGui.QImage.Format_RGB888)
-                    camera_widget=ImgWidget+name
-                    w.camera_widget.setImage(image)
-                ########### ##############################    
-            else:
-                logger.debug("None frame received. Camera: " + name)
+            qim = QtGui.QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888) # https://gist.github.com/smex/5287589
+            qim = qim.scaled(200,200, aspectRatioMode=QtCore.Qt.KeepAspectRatio, transformMode=QtCore.Qt.SmoothTransformation)
+            
+            self.camera_label[name].setPixmap(QtGui.QPixmap.fromImage(qim))
+            self.camera_label[name].adjustSize()
+
+            self.add_log("Received dataset. RPS: " + str(int(pc_rps)))
 
 app = QApplication(sys.argv)
 w = MyWindowClass(None)

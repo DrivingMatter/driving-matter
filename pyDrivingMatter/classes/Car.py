@@ -50,6 +50,9 @@ class Car():
         logging.debug("Sending => {}".format(message))
         self.ws_action.send(message)
 
+    def take_action(self, method):
+        self.__sendStep(method, 1)
+
     def forward(self, step = 1):
         self.__sendStep("forward", step)
 

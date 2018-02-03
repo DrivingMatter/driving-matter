@@ -4,11 +4,13 @@ import io
 from PIL import Image
 import numpy as np
 import pickle
+from time import time
 
 from classes.pyDrivingMatter import pyDrivingMatter
 from classes.Car import Car
 from classes.KBhit import KBHit
 from classes.Misc import RPSCounter
+import base64
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 #pydm = pyDrivingMatter()
 #car_data, car_link = pydm.get_car()
 
-car_link = "ws://{}:{}".format("192.168.8.103", "8000")
+car_link = "ws://{}:{}".format("192.168.137.2", "8000")
 
 action_link = "{}/action".format(car_link)
 state_link = "{}/state".format(car_link)
@@ -28,25 +30,32 @@ car = Car(action_link, url_state=state_link)
 
 rps_counter = RPSCounter()
 
+import json
+
 def handle_state(data, ws):
     global rps_counter
-    current_datavector = pickle.loads(data)
+    current_datavector = json.loads(data)
+    
     pc_rps = rps_counter.get()
 
     #logger.debug("PC RPS: " + str(pc_rps) + "\n\nCar RPS: " + str(car_rps) + "\n\nTotal: " + str(total_requests))
-
     sensors = current_datavector['sensors']
+    
     logger.debug(sensors)
+    #logger.debug(time())
+
     camera_names = [key for key in current_datavector if key.startswith('camera')]
     for name in camera_names:
-        frame = current_datavector[name]
-        if frame != None:
-            img = Image.open(io.BytesIO(frame))
-            current_datavector[name] = img
-            cv2.imshow(name, np.asarray(img))
-            cv2.waitKey(1) # CV2 Devil - Don't dare to remove
-        else:
-            logger.debug("None frame received. Camera: " + name)
+        frame_data = current_datavector[name] # [type, array, shape]
+        #print (frame_data)
+        #import sys
+        #sys.exit()
+        frame = base64.decodestring(frame_data[1].encode("utf-8"))
+        frame = np.frombuffer(frame, frame_data[0]) # https://stackoverflow.com/questions/30698004/how-can-i-serialize-a-numpy-array-while-preserving-matrix-dimensions    
+        frame = frame.reshape(frame_data[2])
+
+        cv2.imshow(name, frame)
+        cv2.waitKey(1) # CV2 Devil - Don't dare to remove
 
 car.set_state_callback(handle_state)
 
