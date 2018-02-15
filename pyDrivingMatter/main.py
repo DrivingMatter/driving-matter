@@ -11,6 +11,7 @@ from classes.Car import Car
 from classes.KBhit import KBHit
 from classes.Misc import RPSCounter
 import base64
+import cStringIO
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 #pydm = pyDrivingMatter()
 #car_data, car_link = pydm.get_car()
 
-car_link = "ws://{}:{}".format("192.168.137.2", "8000")
+car_link = "ws://{}:{}".format("192.168.12.103", "8000")
 
 action_link = "{}/action".format(car_link)
 state_link = "{}/state".format(car_link)
@@ -38,21 +39,25 @@ def handle_state(data, ws):
     
     pc_rps = rps_counter.get()
 
-    #logger.debug("PC RPS: " + str(pc_rps) + "\n\nCar RPS: " + str(car_rps) + "\n\nTotal: " + str(total_requests))
+    logger.debug("PC RPS: " + str(pc_rps))
     sensors = current_datavector['sensors']
     
-    logger.debug(sensors)
-    #logger.debug(time())
+    # logger.debug(sensors)
+    # logger.debug(time())
 
     camera_names = [key for key in current_datavector if key.startswith('camera')]
     for name in camera_names:
         frame_data = current_datavector[name] # [type, array, shape]
-        #print (frame_data)
-        #import sys
-        #sys.exit()
-        frame = base64.decodestring(frame_data[1].encode("utf-8"))
-        frame = np.frombuffer(frame, frame_data[0]) # https://stackoverflow.com/questions/30698004/how-can-i-serialize-a-numpy-array-while-preserving-matrix-dimensions    
-        frame = frame.reshape(frame_data[2])
+        
+        frame = cStringIO.StringIO(base64.decodestring(frame_data.encode("utf-8")))
+        frame = np.asarray(Image.open(frame))
+        frame = np.roll(frame, 1, axis=-1) # BGR to RGB
+
+
+        # Reading NumPy 
+        # frame = base64.decodestring(frame_data[1].encode("utf-8"))
+        # frame = np.frombuffer(frame, frame_data[0]) # https://stackoverflow.com/questions/30698004/how-can-i-serialize-a-numpy-array-while-preserving-matrix-dimensions    
+        # frame = frame.reshape(frame_data[2])
 
         cv2.imshow(name, frame)
         cv2.waitKey(1) # CV2 Devil - Don't dare to remove

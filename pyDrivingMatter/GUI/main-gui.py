@@ -34,6 +34,8 @@ import base64
 import json
 import socket
 
+from io import StringIO, BytesIO
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -179,9 +181,8 @@ class MyWindowClass(QMainWindow):
         for name in camera_names:
             frame_data = current_datavector[name] # [type, array, shape]
 
-            frame = base64.decodestring(frame_data[1].encode("utf-8"))
-            frame = np.frombuffer(frame, frame_data[0]) # https://stackoverflow.com/questions/30698004/how-can-i-serialize-a-numpy-array-while-preserving-matrix-dimensions    
-            frame = frame.reshape(frame_data[2])
+            frame = BytesIO(base64.decodestring(frame_data.encode("utf-8")))
+            frame = np.asarray(Image.open(frame))
 
             qim = QtGui.QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888) # https://gist.github.com/smex/5287589
             qim = qim.scaled(200,200, aspectRatioMode=QtCore.Qt.KeepAspectRatio, transformMode=QtCore.Qt.SmoothTransformation)

@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtGui
 from math import sqrt
 import time
 
-step_size = 20.0
+step_size = 5.0
 
 class Writer(QWidget):
     distance_from_center = 0
@@ -14,6 +14,7 @@ class Writer(QWidget):
         super().__init__()
         
         self.car = car
+        print (self.car)
         if car is None:
             error_dialog = QErrorMessage()
             error_dialog.showMessage('Car not connected.')
@@ -68,14 +69,14 @@ class Writer(QWidget):
             y3 = 1
             
         directions = {
-            '[-1, -1]':'backwardRight',
-            '[-1, 0]' :'right',
-            '[-1, 1]' :'forwardRight',
-            '[0, 1]'  :'forward',
-            '[1, 1]'  :'forwardLeft',
-            '[1, 0]'  :'left',
-            '[1, -1]' :'backwardLeft',
-            '[0, -1]' :'backward',
+            '[-1, -1]':'forwardLeft',
+            '[-1, 0]' :'left',
+            '[-1, 1]' :'backwardLeft',
+            '[0, 1]'  :'backward',
+            '[1, 1]'  :'backwardRight',
+            '[1, 0]'  :'right',
+            '[1, -1]' :'forwardRight',
+            '[0, -1]' :'forward',
         }
 
         key = str([x3, y3])
@@ -92,17 +93,17 @@ class Writer(QWidget):
             'backward'      : 'backward',
         }
 
-        return actions[direction].split(" "), int(steps/step_size)
+        return actions[direction].split(" "), int(steps/step_size), direction
 
     def take_action(self, actions, steps, delay=0.3):        
         for action in actions:
-            #self.car.take_action(action)
             print (action)
+            self.car.take_action(action)
             time.sleep(delay)
 
         for step in range(steps-1):
             print (actions[-1])
-            #self.car.take_action(actions[-1])
+            self.car.take_action(actions[-1])
             time.sleep(delay)
 
     def paintEvent(self, event):
@@ -124,7 +125,6 @@ class Writer(QWidget):
                 x2, y2 = new_point
                 x1, y1 = old_point
                 steps = int(sqrt(((x2-x1)**2) + ((y2-y1)**2)))
-
                 for (new_x, new_y) in self.points:
                     q.drawLine(x, y, new_x, new_y)
                     x, y = new_x, new_y
@@ -132,5 +132,6 @@ class Writer(QWidget):
                 if steps < step_size:
                     self.points = self.points[:-1]
                 else:
-                    actions, steps = self.get_action(x1, y1, x2, y2, steps)
+                    actions, steps, direction = self.get_action(x1, y1, x2, y2, steps)
+                    print ("Mouse Direction: " + direction)
                     self.take_action(actions, steps, delay=0)
