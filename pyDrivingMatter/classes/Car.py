@@ -81,7 +81,7 @@ class Car():
             self.state_callback(message, ws)
 
     def _state_c_on_open(self, ws):
-        #ws.send("send_state")
+        # ws.send("send_state")
         ws.send("read_state")
         # ws.send("stop_read_state") # This is also possible, think where to use
         print ("Websocket state opened, send_state sent")

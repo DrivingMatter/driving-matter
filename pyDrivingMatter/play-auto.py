@@ -4,7 +4,6 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 import logging
 from time import sleep
 import pickle
-from keras.models import model_from_json
 from skimage import color
 from scipy import misc
 import logging
@@ -22,8 +21,7 @@ import base64
 import cStringIO
 import json
 
-from keras.models import model_from_json
-
+#from keras.models import model_from_json
 
 ACTIONS = ('forward', 'forwardLeft', 'forwardRight', 'backward', 'backwardRight', 'backwardLeft', 'stop')
 
@@ -33,7 +31,7 @@ logger = logging.getLogger(__name__)
 #pydm = pyDrivingMatter()
 #car_data, car_link = pydm.get_car()
 
-
+"""
 logging.debug("Loading model")
 
 json_file = open('models/model003.json', 'r')
@@ -48,8 +46,9 @@ loaded_model.compile(loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
 logging.debug("Model loaded")
+"""
 
-car_link = "ws://{}:{}".format("192.168.12.103", "8000")
+car_link = "ws://{}:{}".format("192.168.137.2", "8000")
 
 action_link = "{}/action".format(car_link)
 state_link = "{}/state".format(car_link)
@@ -65,29 +64,36 @@ logger.debug("ACTIONS = " + str(ACTIONS))
 
 def handle_state(data, ws):
     global rps_counter, loaded_model, car
+
+    print (len(data))
+
     current_datavector = json.loads(data)
     
     pc_rps = rps_counter.get()
 
     logger.debug("PC RPS: " + str(pc_rps))
+    
     sensors = current_datavector['sensors']
     
     collisions = sensors
 
-    frame = cStringIO.StringIO(base64.decodestring(current_datavector['camera_c'].encode("utf-8")))
-    frame = np.asarray(Image.open(frame))
-    frame = np.roll(frame, 1, axis=-1) # BGR to RGB
+    #frame = cStringIO.StringIO(base64.decodestring(current_datavector['camera_c'].encode("utf-8")))
+    #frame = np.asarray(Image.open(frame))
+    #frame = np.roll(frame, 1, axis=-1) # BGR to RGB
 
     # Reading NumPy 
-    # frame = base64.decodestring(frame_data[1].encode("utf-8"))
-    # frame = np.frombuffer(frame, frame_data[0]) # https://stackoverflow.com/questions/30698004/how-can-i-serialize-a-numpy-array-while-preserving-matrix-dimensions    
-    # frame = frame.reshape(frame_data[2])
+    for name in ['camera_c', 'camera_l', 'camera_r']:
+        frame_data = current_datavector[name]
+        frame = base64.decodestring(frame_data[1].encode("utf-8"))
+        frame = np.frombuffer(frame, frame_data[0]) # https://stackoverflow.com/questions/30698004/how-can-i-serialize-a-numpy-array-while-preserving-matrix-dimensions    
+        frame = frame.reshape(frame_data[2])
     
-    frame = color.rgb2gray(frame)
+        #frame = color.rgb2gray(frame)
 
-    cv2.imshow("Image", frame)
-    cv2.waitKey(1)
+        cv2.imshow(name, frame)
+        cv2.waitKey(1)
 
+    """
     #print ("Showing"  + str(time()))
     frame = misc.imresize(frame, 10)
     #print ("Resized"  + str(time()))
@@ -122,7 +128,6 @@ def handle_state(data, ws):
     logger.debug("Predicted Action: " + action + " " + str(time()))
     
     #logger.debug("Collisions: " + collisions)        
-    """
     can_take_action = True    
     
     for name in collisions:
@@ -132,7 +137,6 @@ def handle_state(data, ws):
             break
 
     logger.debug("can_take_action: " + str(can_take_action) + " " + str(time()))        
-    """
 
     #if can_take_action:
     logger.debug("Taking action " + str(time()))
@@ -142,6 +146,6 @@ def handle_state(data, ws):
     logger.debug("Car Stopped " + str(time()))
     # sleep(1) # Wait for action to complete
     print ("="*80)
-
+    """
 
 car.set_state_callback(handle_state)

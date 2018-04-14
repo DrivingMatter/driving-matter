@@ -65,9 +65,9 @@ class MyWindowClass(QMainWindow):
         self.img_center = self.ui.img_center    
 
         self.camera_label = {
-            'camera_l': self.img_left,
+            'camera_r': self.img_left,
             'camera_c': self.img_center,
-            'camera_r': self.img_right
+            'camera_l': self.img_right
         }
 
         self.sensor_label = {
